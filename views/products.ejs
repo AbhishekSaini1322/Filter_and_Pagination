@@ -1,93 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <style>
-        img{
-            width: 300px;
-            height: 300px;
-        }
-    </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
+<style>
+    img {
+        height: 200px;
+        width: 200px;
+    }
+
+
+    #category-select {
+        display: none;
+    }
+</style>
 <body>
     <div>
         <button id="filter">Filter</button>
+        <% if (categoryvalue || brandvalue) { %>
+            <button id="clear-filter">Clearfilter</button>
+          <% } %>
+        
         <div id="category-select">
-            <h3>Categories</h3>
-            <ul >
-                <% categories.forEach(category => { %>
-                <li>
-                    <button class="category-button" data-category="<%= category %>">
-                        <%= category %>
-                    </button>
-                </li>
-                <% }) %>
+            <ul class="category">
+                <% categories.forEach(category=> { %>
+                    <li>
+                        <button class="category-button <% if(categoryvalue==category){%>active<%} %>"
+                            data-category="<%= category %>">
+                            <%= category %>
+                        </button>
+
+                    </li>
+                    <% }) %>
             </ul>
-    
-            <h3>Brands</h3>
-            <ul>
-                <% uniquebrand.forEach(brand => { %>
-                <li>
-                    <button class="brand-button" data-brand="<%= brand %>">
-                        <%= brand %>
-                    </button>
-                </li>
-                <% }) %>
+            <h2>Brand</h2>
+            <ul class="brand">
+                <%uniquebrand.forEach(brand=> { %>
+
+                    <li>
+                        <button class="brand-button <% if(brandvalue==brand){%>active<%} %>" data-brand="<%= brand %>">
+                            <%= brand %>
+
+                        </button>
+                    </li>
+                    <% }) %>
             </ul>
         </div>
-    
         <div id="products" class="category-items">
-            <% data.forEach(element => { %>
-            <div id="products-item">
-                <h1>S No : <%= element.id %></h1>
-                <img src="<%= element.images[0] %>" />
-                <h2><%= element.title %></h2>
-                <p>Description: <%= element.description %></p>
-                <h3>Price: <%= element.price %></h3>
-                <h2>Category: <%= element.category %></h2>
-                <h4>Brand: <%= element.brand %></h4>
-            </div>
-            <% }) %>
+            <% data.forEach(element=> { %>
+                <div id="products-item">
+                    <h1>S No :<%= element.id %>
+                    </h1>
+                    <img src="<%= element.images[0] %>" />
+                    <h2>
+                      <%= element.title %>
+                    </h2>
+                    <p>description :<%= element.description %>
+                    </p>
+                    <h3>price :<%= element.price %>
+                    </h3>
+                    <h2>category :<%= element.category %>
+                    </h2>
+                    <p>brand :<%= element.brand %>
+                    </p>
+                </div>
+                <% }) %>
         </div>
-    
         <div>
             <% if (pagination) { %>
-            <a id="nextPageLink" class="page-link btn btn-primary"
-                href="/products?limit=<%= limit %>&skip=<%= skip %><% if (categoryvalue) { %>&category=<%= categoryvalue %><% } %><% if (brandvalue) { %>&brand=<%= brandvalue %><% } %>">
-                Next
-            </a>
-            <% } %>
-    
-            <% for (let index = 0; index < totalpage; index++) { %>
-            <a 
-                href="/products?limit=<%= limit %>&pz=<%= index + 1 %>&skip=<%= limit * index %><%if(categoryvalue){%>&category=<%=categoryvalue%><%}%><%if(brandvalue){%>&brand=<%=brandvalue%><%}%>">
-                <%= index + 1 %>
-            </a>
-            <% } %>
+                <a id="nextPageLink" class="page-link btn btn-primary"
+                    href="/products?limit=<%= limit %>&skip=<%= skip %><% if (categoryvalue) { %>&category=<%= categoryvalue %><% } %><% if (brandvalue) { %>&brand=<%= brandvalue %><% } %>">
+                    Next
+                </a>
+                <% } %>
+                  <% for (let index=0; index < totalpage; index++) { %>
+                        <a class="page-link btn btn-outline-secondary"
+                            href="/products?limit=<%= limit %>&pz=<%= index + 1 %>&skip=<%= limit * index %><%if(categoryvalue){%>&category=<%=categoryvalue%><%}%><%if(brandvalue){%>&brand=<%=brandvalue%><%}%>">
+                            <%= index + 1 %>
+                        </a>
+                        <% } %>
         </div>
     </div>
-    
     <script>
+        $("#clear-filter").click(function(){
+            window.open("/products","_self");
+        })
+
         $("#filter").click(function () {
-            $("#category-select").toggle(1000);
+          $("#category-select").toggle(1000);
         });
-    
-        $(document).on('click', '.category-button', function () {
-            var categoryName = $(this).data("category");
-            var _url = "/products?category=" + categoryName;
+        $(document).on("click", ".category-button, .brand-button", function () {
+          var categoryName = $(this).data("category");
+          var brandName = $(this).data("brand");
+          var activebrand = $(".brand").find(".active").data("brand");
+          var activeCategory = $(".category").find(".active").data("category");
+  
+          if (categoryName) {
+            let _url = "/products?category=" + categoryName;
+            if (activebrand) {
+              _url = _url + "&brand=" + activebrand;
+            }
             window.open(_url, "_self");
+          }
+           if (brandName) {
+              let _url = "/products?brand="+brandName
+              if(activeCategory){
+                  _url=_url+"&category="+activeCategory
+              }
+              window.open(_url,"_self");
+          }
         });
-    
-        $(document).on('click', '.brand-button', function () {
-            var brandName = $(this).data("brand");
-            var _url = "/products?brand=" + brandName;
-            window.open(_url, "_self");
-        });
-    </script>
+      </script>
 </body>
+
 </html>
-
-
